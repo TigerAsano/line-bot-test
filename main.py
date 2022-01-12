@@ -1,6 +1,6 @@
-from flask import Flask, request, abort
 import os
 
+from flask import Flask, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
 )
@@ -8,32 +8,24 @@ from linebot.exceptions import (
     InvalidSignatureError
 )
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
-)
+    MessageEvent, TextMessage, TemplateSendMessage, CarouselTemplate, CarouselColumn)
 
 app = Flask(__name__)
 
-#環境変数取得
-YOUR_CHANNEL_ACCESS_TOKEN = os.environ["YOUR_CHANNEL_ACCESS_TOKEN"]
-YOUR_CHANNEL_SECRET = os.environ["YOUR_CHANNEL_SECRET"]
+LINE_CHANNEL_ACCESS_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
+LINE_CHANNEL_SECRET = os.environ["LINE_CHANNEL_SECRET"]
 
-line_bot_api = LineBotApi(YOUR_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(YOUR_CHANNEL_SECRET)
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-@app.route("/")
-def hello_world():
-    return "hello world!"
 
 @app.route("/callback", methods=['POST'])
 def callback():
-    # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
 
-    # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info("Request body: " + body)
 
-    # handle webhook body
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
@@ -41,175 +33,35 @@ def callback():
 
     return 'OK'
 
+
 @handler.add(MessageEvent, message=TextMessage)
-from linebot import LineBotApi
-from linebot.models import TextSendMessage,  FlexSendMessage
+def response_message(event):
+    # notesのCarouselColumnの各値は、変更してもらって結構です。
+    notes = [CarouselColumn(thumbnail_image_url="https://renttle.jp/static/img/renttle02.jpg",
+                            title="【ReleaseNote】トークルームを実装しました。",
+                            text="creation(創作中・考え中の何かしらのモノ・コト)に関して、意見を聞けるようにトークルーム機能を追加しました。",
+                            actions=[{"type": "message","label": "サイトURL","text": "https://renttle.jp/notes/kota/7"}]),
 
-def replay-message(event):
+             CarouselColumn(thumbnail_image_url="https://renttle.jp/static/img/renttle03.jpg",
+                            title="ReleaseNote】創作中の活動を報告する機能を追加しました。",
+                            text="創作中や考え中の時点の活動を共有できる機能を追加しました。",
+                            actions=[
+                                {"type": "message", "label": "サイトURL", "text": "https://renttle.jp/notes/kota/6"}]),
 
-    payload = {
-    "type": "flex",
-    "altText": "Flex Message",
-    "contents": {
-        "type": "bubble",
-        "hero": {
-        "type": "image",
-        "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/01_1_cafe.png",
-        "size": "full",
-        "aspectRatio": "20:13",
-        "aspectMode": "cover",
-        "action": {
-            "type": "uri",
-            "label": "Line",
-            "uri": "https://linecorp.com/"
-        }
-        },
-        "body": {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [
-            {
-            "type": "text",
-            "text": "Brown Cafe",
-            "size": "xl",
-            "weight": "bold"
-            },
-            {
-            "type": "box",
-            "layout": "baseline",
-            "margin": "md",
-            "contents": [
-                {
-                "type": "icon",
-                "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png",
-                "size": "sm"
-                },
-                {
-                "type": "icon",
-                "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png",
-                "size": "sm"
-                },
-                {
-                "type": "icon",
-                "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png",
-                "size": "sm"
-                },
-                {
-                "type": "icon",
-                "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png",
-                "size": "sm"
-                },
-                {
-                "type": "icon",
-                "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gray_star_28.png",
-                "size": "sm"
-                },
-                {
-                "type": "text",
-                "text": "4.0",
-                "flex": 0,
-                "margin": "md",
-                "size": "sm",
-                "color": "#999999"
-                }
-            ]
-            },
-            {
-            "type": "box",
-            "layout": "vertical",
-            "spacing": "sm",
-            "margin": "lg",
-            "contents": [
-                {
-                "type": "box",
-                "layout": "baseline",
-                "spacing": "sm",
-                "contents": [
-                    {
-                    "type": "text",
-                    "text": "Place",
-                    "flex": 1,
-                    "size": "sm",
-                    "color": "#AAAAAA"
-                    },
-                    {
-                    "type": "text",
-                    "text": "Miraina Tower, 4-1-6 Shinjuku, Tokyo",
-                    "flex": 5,
-                    "size": "sm",
-                    "color": "#666666",
-                    "wrap": True
-                    }
-                ]
-                },
-                {
-                "type": "box",
-                "layout": "baseline",
-                "spacing": "sm",
-                "contents": [
-                    {
-                    "type": "text",
-                    "text": "Time",
-                    "flex": 1,
-                    "size": "sm",
-                    "color": "#AAAAAA"
-                    },
-                    {
-                    "type": "text",
-                    "text": "10:00 - 23:00",
-                    "flex": 5,
-                    "size": "sm",
-                    "color": "#666666",
-                    "wrap": True
-                    }
-                ]
-                }
-            ]
-            }
-        ]
-        },
-        "footer": {
-        "type": "box",
-        "layout": "vertical",
-        "flex": 0,
-        "spacing": "sm",
-        "contents": [
-            {
-            "type": "button",
-            "action": {
-                "type": "uri",
-                "label": "CALL",
-                "uri": "https://linecorp.com"
-            },
-            "height": "sm",
-            "style": "link"
-            },
-            {
-            "type": "button",
-            "action": {
-                "type": "uri",
-                "label": "WEBSITE",
-                "uri": "https://linecorp.com"
-            },
-            "height": "sm",
-            "style": "link"
-            },
-            {
-            "type": "spacer",
-            "size": "sm"
-            }
-        ]
-        }
-    }
-    }
+             CarouselColumn(thumbnail_image_url="https://renttle.jp/static/img/renttle04.jpg",
+                            title="【ReleaseNote】タグ機能を追加しました。",
+                            text="「イベントを作成」「記事を投稿」「本を登録」にタグ機能を追加しました。",
+                            actions=[
+                                {"type": "message", "label": "サイトURL", "text": "https://renttle.jp/notes/kota/5"}])]
 
-    container_obj = FlexSendMessage.new_from_json_dict(payload)
+    messages = TemplateSendMessage(
+        alt_text='template',
+        template=CarouselTemplate(columns=notes),
+    )
 
-    line_bot_api.push_massage(
-        event.source.user_id
-        , messages=container_obj)
+    line_bot_api.reply_message(event.reply_token, messages=messages)
+
 
 if __name__ == "__main__":
-#    app.run()
-    port = int(os.getenv("PORT"))
+    port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
