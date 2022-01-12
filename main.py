@@ -205,8 +205,8 @@ def replay-message(event):
 
     container_obj = FlexSendMessage.new_from_json_dict(payload)
 
-    line_bot_api.reply_massage(
-        event.reply_token
+    line_bot_api.push_massage(
+        event.source.user_id
         , messages=container_obj)
 
 if __name__ == "__main__":
